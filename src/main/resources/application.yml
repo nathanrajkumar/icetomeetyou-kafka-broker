@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: icetomeetyou-kafka-broker
+  kafka:
+    template:
+      default-topic: order-created
+      order-created-topic-name: order-created
+      order-updated-topic-name: order-updated
+      order-deleted-topic-name: order-deleted
+      order-assigned-to-user-topic-name: order-assigned
+      order-completed-topic-name: order-completed
+      user-updated-topic-name: user-updated
+      order-comment-topic-name: order-comment-added
+    consumer:
+      enable-auto-commit: true
+#      this is the list of kafka broker addresses that the kafka client library will use to establish an initial connection. In this example, we have configured it to connect to a single broker running on localhost on port 9092.
+      bootstrap-servers: localhost:9092
+#      A unique identifier for the group of consumer instances that will be consuming messages from the topic. All consumer instances with the same group-id will work together to consume messages from the same partitions of the topic.
+      group-id: order-management-consumer-group
+#      The earliest or latest offset to start consuming messages from the topic. If this property is set to earliest, the consumer will start consuming from the earliest offset available for the partitions it is assigned to. If it is set to latest, the consumer will start consuming from the latest offset available for the partitions it is assigned to.
+      auto-offset-reset: earliest
+#      Deserializes keys as strings using StringDeserializer.
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+#      This deserializer can handle exceptions during deserialization, providing more robust error handling.
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+#      specified to configure the trusted packages for JSON deserialization.
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: '*'
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+#        deserialize values as JSON.
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+
+
+    producer:
+      bootstrap-servers: localhost:9092
+#     Deserializes keys as strings using StringDeserializer.
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#     deserialize values as JSON.
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+#      The number of times that the producer will retry sending a message to Kafka in case of a failure. In this example, we have set it to 0 to disable retries.
+      retries: 0

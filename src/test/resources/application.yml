@@ -1,0 +1,14 @@
+spring:
+  kafka:
+    template:
+      default-topic: order-created
+      order-created-topic-name: order-created
+      order-updated-topic-name: order-updated
+      order-deleted-topic-name: order-deleted
+      order-assigned-to-user-topic-name: order-assigned
+      order-completed-topic-name: order-completed
+      user-updated-topic-name: user-updated
+      order-comment-topic-name: order-comment-added
+    consumer:
+      auto-offset-reset: earliest
+      group-id: test-order-management-consumer-group
