@@ -1,5 +1,6 @@
 package com.encode_initiative.icetomeetyoukafkabroker.controller;
 
+import com.encode_initiative.icetomeetyoukafkabroker.model.Order;
 import com.encode_initiative.icetomeetyoukafkabroker.producer.OrderEventProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,44 +16,37 @@ public class OrderController {
     }
 
     @PostMapping("/create")
-    public String createOrder(@RequestParam String orderId, @RequestParam String orderDetails) {
-        producer.sendOrderCreatedEvent(orderId, orderDetails);
+    public String createOrder(@RequestBody Order order) {
+        producer.sendOrderCreatedEvent(order);
         return "Order created event sent";
     }
 
+    // order is sent in via a redis cache when the order is grabbed for the first time.
     @PutMapping("/update")
-    public String updateOrder(@RequestParam String orderId, @RequestParam String orderDetails) {
-        producer.sendOrderUpdatedEvent(orderId, orderDetails);
+    public String updateOrder(@RequestBody Order order) {
+        producer.sendOrderUpdatedEvent(order);
         return "Order updated event sent";
     }
 
     @DeleteMapping("/delete")
-    public String deleteOrder(@RequestParam String orderId) {
-        producer.sendOrderDeletedEvent(orderId);
+    public String deleteOrder(@RequestBody Order order) {
+        producer.sendOrderDeletedEvent(order);
         return "Order deleted event sent";
     }
 
+    // the user here will be added to the request body using the cached user data when
+    // the user logs in for the first time (we will be talking more about redis in the
+    // front end chapter...) on the front end allowing us not to have to perform a
+    // get lookup in a kafka topic which can cause increased latency which is bad.
     @PostMapping("/assign")
-    public String assignOrder(@RequestParam String orderId, @RequestParam String assignee) {
-        producer.sendOrderAssignedEvent(orderId, assignee);
+    public String assignOrder(@RequestBody Order order) {
+        producer.sendOrderAssignedEvent(order, order.getAssignedUser());
         return "Order assigned event sent";
     }
 
-    @PostMapping("/complete")
-    public String completeOrder(@RequestParam String orderId) {
-        producer.sendOrderCompletedEvent(orderId);
-        return "Order completed event sent";
-    }
-
-    @PutMapping("/user/update")
-    public String updateUser(@RequestParam String userId, @RequestParam String userDetails) {
-        producer.sendUserUpdatedEvent(userId, userDetails);
-        return "User updated event sent";
-    }
-
-    @PostMapping("/comment")
-    public String addComment(@RequestParam String orderId, @RequestParam String comment) {
-        producer.sendOrderCommentAddedEvent(orderId, comment);
-        return "Order comment added event sent";
+    @PostMapping("/update/status")
+    public String orderStatusChanged(@RequestBody Order order, @RequestParam String newStatus) {
+        producer.sendOrderStatusChangedEvent(order, newStatus);
+        return "Order status update event sent";
     }
 }

@@ -1,14 +1,18 @@
 spring:
   kafka:
+    bootstrap-servers: localhost:9093  # Make sure this matches the embedded Kafka port
     template:
-      default-topic: order-created
-      order-created-topic-name: order-created
-      order-updated-topic-name: order-updated
-      order-deleted-topic-name: order-deleted
-      order-assigned-to-user-topic-name: order-assigned
-      order-completed-topic-name: order-completed
-      user-updated-topic-name: user-updated
-      order-comment-topic-name: order-comment-added
+      default-topic: order-created  # Ensures that if no topic is specified, it defaults to `order-created`
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.LongSerializer  # Ensure keys are serialized as Long
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer  # Ensure values are serialized as JSON
     consumer:
-      auto-offset-reset: earliest
-      group-id: test-order-management-consumer-group
+      auto-offset-reset: earliest  # Start consuming from the beginning of the topic for tests
+      group-id: test-order-management-consumer-group  # Unique group ID for the test consumer
+      key-deserializer: org.apache.kafka.common.serialization.LongDeserializer  # Ensure keys are deserialized as Long
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer  # Ensure values are deserialized as JSON
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: '*'  # Allows JSON deserialization of any package for testing purposes

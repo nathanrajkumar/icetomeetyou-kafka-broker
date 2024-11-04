@@ -1,10 +1,8 @@
 package com.encode_initiative.icetomeetyoukafkabroker;
 
 import com.encode_initiative.icetomeetyoukafkabroker.consumer.OrderEventConsumer;
+import com.encode_initiative.icetomeetyoukafkabroker.model.Order;
 import com.encode_initiative.icetomeetyoukafkabroker.producer.OrderEventProducer;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.junit.ClassRule;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,14 +41,17 @@ public class TestKafkaConfig {
     @Test
     public void givenEmbeddedKafkaBroker_whenSendingWithProducerToOrderCreatedEvent_thenMessageReceivedByConsumer()
             throws Exception {
-        String orderId = "newOrderId";
-        String orderDetails = "Order Details sent to create new Order topic";
+        Order order = new Order();
+        order.setStatus("NEW ORDER");
+        order.setIceCubeOrderAmount(5);
+        order.setSendToLocation("SAHARA DESERT");
 
-        producer.sendOrderCreatedEvent(orderId, orderDetails);
+
+        producer.sendOrderCreatedEvent(order);
 
         boolean messageConsumed = consumer.getLatch().await(10, TimeUnit.SECONDS);
         Assertions.assertTrue(messageConsumed);
-        Assertions.assertEquals(consumer.getPayload().key(), orderId);
+        Assertions.assertEquals(consumer.getPayload().value(), order);
         consumer.resetLatch();
     }
 }
